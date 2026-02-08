@@ -25,15 +25,12 @@ Output locations:
 ## Troubleshooting
 
 - If `ISCC.exe not found` appears, install Inno Setup 6 or run with `-SkipIscc`.
-- If Debug build output is locked by Visual Studio/running app, use:
+- If Debug build output is locked by a running app/IDE, use:
 
 ```powershell
 dotnet build DesktopMemo.sln -c Release
 ```
 
-## CI
-
-GitHub Actions workflow file:
-- `.github/workflows/build-installer.yml`
-
-The workflow installs Inno Setup, builds the app, produces installer, and uploads it as an artifact.
+## Notes
+- Packaging is script-driven via `scripts/package-inno.ps1`.
+- No repository-local CI workflow file is currently checked in for installer automation.

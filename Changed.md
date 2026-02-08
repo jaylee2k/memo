@@ -3,23 +3,22 @@
 ## Unreleased
 
 ### Added
-- WPF 3단 레이아웃 메모 관리 UI(그룹 트리, 메모 목록, 상세 편집, 휴지통 탭) 구현.
-- 메모/그룹 CRUD, 휴지통 복구/비우기/만료 정리, Sticky Note 다중 창 기능 구현.
-- 알람(단일/반복/스누즈 5/10/30), 트레이 아이콘 클릭/더블클릭 동작 구현.
-- Markdown 미리보기(WebBrowser + Markdig) 기능 추가.
-- MSTest V2 기반 테스트 프로젝트(`tests/DesktopMemo.Tests`) 및 단위 테스트 추가.
-- Inno Setup 설치 패키징 스크립트/CI 워크플로우 추가.
+- 메모 제목 검색/필터(`SearchKeyword`, `FilteredNotesView`) 기능 추가.
+- 메인 편집 폼 입력 검증(`FontSize`, `FontColorHex`, `AlarmTimeText`) 및 저장 차단 로직 추가.
+- 설정 창 입력 검증(`FontSize`, `FontColorHex`) 및 저장 차단 로직 추가.
+- 설정/메모 입력 validation UI(오류 보더 + 툴팁) 추가.
+- `build.cmd`, `run.cmd` 실행 스크립트 추가.
+- ViewModel validation 회귀 테스트 4건 추가.
 
 ### Changed
-- SQLite DB 초기화를 EF 마이그레이션 의존 방식에서 스키마 보장 방식(`CREATE TABLE IF NOT EXISTS`)으로 전환.
-- SQLite GUID 저장 포맷을 `BinaryGUID=false`로 고정해 GUID 컬럼을 문자열(TEXT)로 일관화.
-- 앱 시작 시 레거시 Blob GUID 데이터 자동 정규화(재저장) 로직 추가.
-- 메모 생성 시 예외 처리 및 FK 오류 발생 시 Inbox fallback 재시도 로직 보강.
+- `MainWindow`를 다크 카드형 레이아웃으로 재디자인.
+- `SettingsWindow`를 커스텀 헤더 기반 다크 설정 패널 UI로 재디자인.
+- `StickyNoteWindow`를 노란 상단 바 + 다크 본문 + 하단 툴바 스타일로 재디자인.
+- 테스트 기준을 최신화(총 20개: 통과 18, 건너뜀 2).
 
 ### Fixed
-- `No MigrationSqlGenerator found for provider 'System.Data.SQLite'` 예외 해결.
-- `FOREIGN KEY constraint failed`(Notes insert 시 GroupId FK 실패) 문제 해결.
-- 실행 중 파일 잠금으로 인한 Debug 빌드 실패 상황에서 Release 빌드/테스트 경로 정리.
+- `StickyNoteWindow.xaml`에서 `Button`/`Content` 중복 설정으로 인한 XAML 컴파일 오류 수정.
+- 입력 오류가 조용히 기본값으로 대체되던 문제(알람 시간/색상/크기) 개선.
 
 ## Notes
 - Log updates here before creating a release.

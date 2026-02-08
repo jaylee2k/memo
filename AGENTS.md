@@ -5,7 +5,7 @@
 - `src/DesktopMemo.Domain`: core entities, DTO contracts, enums, and service interfaces.
 - `src/DesktopMemo.Data`: SQLite persistence, DB bootstrap/seeding, and path providers.
 - `src/DesktopMemo.Services`: business logic implementations and mapping helpers.
-- `tests/DesktopMemo.Tests`: MSTest unit tests grouped by layer (`Data/`, `Domain/`, `Services/`).
+- `tests/DesktopMemo.Tests`: MSTest unit tests grouped by layer (`App/`, `Data/`, `Domain/`, `Services/`).
 - `scripts/`: build/packaging automation (notably `package-inno.ps1`).
 - `deploy/inno/`: Inno Setup installer definition.
 - `artifacts/` and `TestResults/`: generated outputs; do not commit build artifacts.
@@ -17,6 +17,8 @@ Run from repository root:
 - `dotnet build DesktopMemo.sln -c Release`: compile when Debug outputs are locked by a running IDE process.
 - `dotnet test tests/DesktopMemo.Tests/DesktopMemo.Tests.csproj -c Debug`: run MSTest suite.
 - `dotnet test tests/DesktopMemo.Tests/DesktopMemo.Tests.csproj -c Release`: stable CI-aligned test run.
+- `build.cmd`: quick restore + Debug build.
+- `run.cmd` or `run.cmd Release`: build and launch desktop app.
 - `./scripts/package-inno.ps1 -Configuration Release -Version 1.0.0`: build and package installer.
 - `./scripts/package-inno.ps1 -Configuration Release -SkipIscc`: stage release files without Inno Setup.
 
@@ -32,7 +34,7 @@ Run from repository root:
 - Place tests in `tests/DesktopMemo.Tests/...` mirroring source structure.
 - Test files end with `Tests.cs`; method names follow `Method_Scenario_Expected`.
 - Prefer deterministic tests and cover business rules in `DesktopMemo.Services` first.
-- Tests run with method-level parallelization configured in `tests/DesktopMemo.Tests/MSTestSettings.cs`.
+- Tests are currently serialized by assembly-level `[DoNotParallelize]` in `tests/DesktopMemo.Tests/MSTestSettings.cs`.
 
 ## Commit & Pull Request Guidelines
 - The repository currently has no commit history on `main`; use clear, imperative commit subjects.
@@ -42,6 +44,7 @@ Run from repository root:
 
 ## Security & Configuration Tips
 - Runtime SQLite DB is stored under `%LOCALAPPDATA%\\DesktopMemo\\desktopmemo.db`.
+- Optional override for test/dev: env var `DESKTOPMEMO_DB_PATH`.
 - Do not commit local DB files, logs, or installer outputs.
 - If Inno Setup is not installed locally, use `-SkipIscc` and validate staged output in `artifacts/staging/net48`.
 - DB bootstrap guarantees required tables and seed rows (`Inbox`, global font settings) on startup.
