@@ -80,6 +80,13 @@
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrushDark}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="10,7" />
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}" />
+                    <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <Style TargetType="ComboBox">
@@ -391,11 +398,11 @@
                                         </StackPanel>
                                         <StackPanel Margin="0,0,6,0">
                                             <TextBlock Text="크기" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
-                                            <TextBox Text="{Binding FontSize, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox Text="{Binding FontSize, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnExceptions=True, NotifyOnValidationError=True}" />
                                         </StackPanel>
                                         <StackPanel>
                                             <TextBlock Text="색상(HEX)" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
-                                            <TextBox Text="{Binding FontColorHex, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox Text="{Binding FontColorHex, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
                                         </StackPanel>
                                     </UniformGrid>
 
@@ -428,7 +435,7 @@
                                         </StackPanel>
                                         <StackPanel Margin="0,0,6,0">
                                             <TextBlock Text="알람 시간(HH:mm)" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
-                                            <TextBox Text="{Binding AlarmTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBox Text="{Binding AlarmTimeText, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" />
                                         </StackPanel>
                                         <StackPanel Margin="0,0,6,0">
                                             <TextBlock Text="반복" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />

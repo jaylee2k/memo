@@ -7,6 +7,8 @@ if /I "%~1"=="Release" set "CONFIG=Release"
 
 pushd "%ROOT%" >nul
 
+taskkill /F /IM DesktopMemo.App.exe >nul 2>&1
+
 dotnet build DesktopMemo.sln -c %CONFIG%
 if errorlevel 1 (
   popd >nul

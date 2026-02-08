@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -17,8 +18,10 @@ using Markdig;
 
 namespace DesktopMemo.App.ViewModels;
 
-public class MainViewModel : ObservableObject
+public class MainViewModel : ObservableObject, IDataErrorInfo
 {
+    private static readonly Regex HexColorRegex = new Regex("^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$");
+
     private readonly IGroupService _groupService;
     private readonly INoteService _noteService;
     private readonly ITrashService _trashService;
@@ -191,6 +194,7 @@ public class MainViewModel : ObservableObject
         {
             if (SetProperty(ref _fontColorHex, value))
             {
+                NotifyValidationChanged();
                 QueueAutoSave();
             }
         }
@@ -203,6 +207,7 @@ public class MainViewModel : ObservableObject
         {
             if (SetProperty(ref _fontSize, value))
             {
+                NotifyValidationChanged();
                 QueueAutoSave();
             }
         }
@@ -227,6 +232,7 @@ public class MainViewModel : ObservableObject
         {
             if (SetProperty(ref _alarmEnabled, value))
             {
+                NotifyValidationChanged();
                 QueueAutoSave();
             }
         }
@@ -251,6 +257,7 @@ public class MainViewModel : ObservableObject
         {
             if (SetProperty(ref _alarmTimeText, value))
             {
+                NotifyValidationChanged();
                 QueueAutoSave();
             }
         }
@@ -307,6 +314,30 @@ public class MainViewModel : ObservableObject
     public bool HasSelectedGroup => SelectedGroup != null;
     public bool HasSelectedNote => SelectedNote != null;
     public int FilteredNoteCount => FilteredNotesView?.Cast<object>().Count() ?? 0;
+    public bool HasValidationErrors =>
+        !string.IsNullOrEmpty(this[nameof(FontSize)]) ||
+        !string.IsNullOrEmpty(this[nameof(FontColorHex)]) ||
+        !string.IsNullOrEmpty(this[nameof(AlarmTimeText)]);
+
+    public string Error => string.Empty;
+
+    public string this[string columnName]
+    {
+        get
+        {
+            switch (columnName)
+            {
+                case nameof(FontSize):
+                    return ValidateFontSize();
+                case nameof(FontColorHex):
+                    return ValidateFontColorHex();
+                case nameof(AlarmTimeText):
+                    return ValidateAlarmTimeText();
+                default:
+                    return string.Empty;
+            }
+        }
+    }
 
     public MainViewModel(
         IGroupService groupService,
@@ -527,12 +558,18 @@ public class MainViewModel : ObservableObject
             return;
         }
 
+        if (HasValidationErrors)
+        {
+            StatusMessage = "입력 값을 확인해주세요.";
+            return;
+        }
+
         _autoSaveDebouncer.Bounce(SaveSelectedNote);
     }
 
     private void SaveSelectedNote()
     {
-        if (SelectedNote == null)
+        if (SelectedNote == null || HasValidationErrors)
         {
             return;
         }
@@ -602,12 +639,66 @@ public class MainViewModel : ObservableObject
 
     private static TimeSpan ParseTime(string value)
     {
-        if (TimeSpan.TryParseExact(value ?? string.Empty, "hh\\:mm", CultureInfo.InvariantCulture, out var time))
+        if (TimeSpan.TryParseExact(value ?? string.Empty, "hh\\:mm", CultureInfo.InvariantCulture, out var time) &&
+            time.TotalHours < 24)
         {
             return time;
         }
 
-        return new TimeSpan(9, 0, 0);
+        throw new FormatException("알람 시간은 HH:mm 형식(00:00~23:59)이어야 합니다.");
+    }
+
+    private string ValidateFontSize()
+    {
+        if (FontSize <= 0 || FontSize > 200)
+        {
+            return "글꼴 크기는 1~200 사이여야 합니다.";
+        }
+
+        return string.Empty;
+    }
+
+    private string ValidateFontColorHex()
+    {
+        if (string.IsNullOrWhiteSpace(FontColorHex))
+        {
+            return "색상을 입력해주세요.";
+        }
+
+        if (!HexColorRegex.IsMatch(FontColorHex.Trim()))
+        {
+            return "색상은 #RRGGBB 또는 #AARRGGBB 형식이어야 합니다.";
+        }
+
+        return string.Empty;
+    }
+
+    private string ValidateAlarmTimeText()
+    {
+        if (!AlarmEnabled)
+        {
+            return string.Empty;
+        }
+
+        var value = AlarmTimeText ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "알람 시간을 입력해주세요.";
+        }
+
+        if (!TimeSpan.TryParseExact(value.Trim(), "hh\\:mm", CultureInfo.InvariantCulture, out var time) ||
+            time.TotalHours >= 24)
+        {
+            return "알람 시간은 HH:mm 형식(00:00~23:59)이어야 합니다.";
+        }
+
+        return string.Empty;
+    }
+
+    private void NotifyValidationChanged()
+    {
+        OnPropertyChanged("Item[]");
+        OnPropertyChanged(nameof(HasValidationErrors));
     }
 
     private bool NoteMatchesSearch(object item)

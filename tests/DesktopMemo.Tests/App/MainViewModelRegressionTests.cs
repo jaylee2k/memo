@@ -32,6 +32,43 @@ public class MainViewModelRegressionTests
         Assert.AreEqual(1, dialog.ErrorCount);
     }
 
+    [TestMethod]
+    public void Validation_WhenAlarmEnabledAndAlarmTimeInvalid_HasValidationError()
+    {
+        var viewModel = new MainViewModel(
+            new FakeGroupService(),
+            new ThrowingNoteService(),
+            new FakeTrashService(),
+            new FakeStickyNoteService(),
+            new FakeSettingsService(),
+            new FakeAlarmService(),
+            new FakeDialogService());
+
+        viewModel.AlarmEnabled = true;
+        viewModel.AlarmTimeText = "25:00";
+
+        Assert.IsTrue(viewModel.HasValidationErrors);
+        Assert.IsFalse(string.IsNullOrEmpty(viewModel[nameof(MainViewModel.AlarmTimeText)]));
+    }
+
+    [TestMethod]
+    public void Validation_WhenFontColorHexInvalid_HasValidationError()
+    {
+        var viewModel = new MainViewModel(
+            new FakeGroupService(),
+            new ThrowingNoteService(),
+            new FakeTrashService(),
+            new FakeStickyNoteService(),
+            new FakeSettingsService(),
+            new FakeAlarmService(),
+            new FakeDialogService());
+
+        viewModel.FontColorHex = "red";
+
+        Assert.IsTrue(viewModel.HasValidationErrors);
+        Assert.IsFalse(string.IsNullOrEmpty(viewModel[nameof(MainViewModel.FontColorHex)]));
+    }
+
     private sealed class FakeDialogService : IUserDialogService
     {
         public int ErrorCount { get; private set; }

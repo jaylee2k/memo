@@ -6,6 +6,18 @@
         Height="320"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
+    <Window.Resources>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#D13438" />
+        <Style TargetType="TextBox">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource ErrorBrush}" />
+                    <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -17,7 +29,7 @@
             <TextBox Text="{Binding FontFamily, UpdateSourceTrigger=PropertyChanged}" Margin="8,4,0,4" />
 
             <TextBlock Text="크기" VerticalAlignment="Center" />
-            <TextBox Text="{Binding FontSize, UpdateSourceTrigger=PropertyChanged}" Margin="8,4,0,4" />
+            <TextBox Text="{Binding FontSize, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Margin="8,4,0,4" />
 
             <TextBlock Text="굵기" VerticalAlignment="Center" />
             <TextBox Text="{Binding FontWeight, UpdateSourceTrigger=PropertyChanged}" Margin="8,4,0,4" />
@@ -26,7 +38,7 @@
             <TextBox Text="{Binding FontStyle, UpdateSourceTrigger=PropertyChanged}" Margin="8,4,0,4" />
 
             <TextBlock Text="색상(HEX)" VerticalAlignment="Center" />
-            <TextBox Text="{Binding FontColorHex, UpdateSourceTrigger=PropertyChanged}" Margin="8,4,0,4" />
+            <TextBox Text="{Binding FontColorHex, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Margin="8,4,0,4" />
 
             <TextBlock Text="밑줄" VerticalAlignment="Center" />
             <CheckBox IsChecked="{Binding IsUnderline, Mode=TwoWay}" Margin="8,4,0,4" VerticalAlignment="Center" />
