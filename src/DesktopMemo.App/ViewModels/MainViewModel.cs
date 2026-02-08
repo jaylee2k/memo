@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopMemo.App.Infrastructure;
@@ -51,11 +53,13 @@ public class MainViewModel : ObservableObject
 
     private string _statusMessage;
     private string _markdownPreviewHtml;
+    private string _searchKeyword;
 
     public ObservableCollection<GroupNodeViewModel> GroupTree { get; }
     public ObservableCollection<GroupNodeViewModel> AllGroupsFlat { get; }
     public ObservableCollection<NoteListItemViewModel> Notes { get; }
     public ObservableCollection<TrashItemViewModel> TrashItems { get; }
+    public ICollectionView FilteredNotesView { get; }
 
     public IReadOnlyList<string> FontFamilies { get; }
     public IReadOnlyList<string> FontWeights { get; }
@@ -288,8 +292,21 @@ public class MainViewModel : ObservableObject
         set => SetProperty(ref _markdownPreviewHtml, value);
     }
 
+    public string SearchKeyword
+    {
+        get => _searchKeyword;
+        set
+        {
+            if (SetProperty(ref _searchKeyword, value))
+            {
+                RefreshNotesFilter();
+            }
+        }
+    }
+
     public bool HasSelectedGroup => SelectedGroup != null;
     public bool HasSelectedNote => SelectedNote != null;
+    public int FilteredNoteCount => FilteredNotesView?.Cast<object>().Count() ?? 0;
 
     public MainViewModel(
         IGroupService groupService,
@@ -313,6 +330,8 @@ public class MainViewModel : ObservableObject
         AllGroupsFlat = new ObservableCollection<GroupNodeViewModel>();
         Notes = new ObservableCollection<NoteListItemViewModel>();
         TrashItems = new ObservableCollection<TrashItemViewModel>();
+        FilteredNotesView = CollectionViewSource.GetDefaultView(Notes);
+        FilteredNotesView.Filter = NoteMatchesSearch;
 
         FontFamilies = new[] { "Segoe UI", "Calibri", "Arial", "Consolas", "Malgun Gothic" };
         FontWeights = new[] { "Normal", "Bold" };
@@ -328,6 +347,7 @@ public class MainViewModel : ObservableObject
         _fontSize = 14;
         _alarmTimeText = "09:00";
         _markdownPreviewHtml = BuildMarkdownHtml(string.Empty);
+        _searchKeyword = string.Empty;
 
         InitializeCommand = new RelayCommand(Initialize);
         AddGroupCommand = new RelayCommand(AddGroup);
@@ -455,10 +475,7 @@ public class MainViewModel : ObservableObject
             });
         }
 
-        if (Notes.Count > 0)
-        {
-            SelectedNote = Notes[0];
-        }
+        RefreshNotesFilter();
     }
 
     private void LoadEditorFromSelectedNote()
@@ -529,6 +546,7 @@ public class MainViewModel : ObservableObject
             SelectedNote.Title = updated.Title;
             SelectedNote.AlarmEnabled = updated.AlarmEnabled;
             SelectedNote.UpdatedAtUtc = updated.UpdatedAtUtc;
+            RefreshNotesFilter();
             StatusMessage = "메모를 저장했습니다.";
         }
         catch (Exception ex)
@@ -590,6 +608,38 @@ public class MainViewModel : ObservableObject
         }
 
         return new TimeSpan(9, 0, 0);
+    }
+
+    private bool NoteMatchesSearch(object item)
+    {
+        if (item is not NoteListItemViewModel note)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(SearchKeyword))
+        {
+            return true;
+        }
+
+        var keyword = SearchKeyword.Trim();
+        return note.Title.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private void RefreshNotesFilter()
+    {
+        FilteredNotesView.Refresh();
+        OnPropertyChanged(nameof(FilteredNoteCount));
+
+        if (SelectedNote != null && !FilteredNotesView.Cast<object>().Any(x => ReferenceEquals(x, SelectedNote)))
+        {
+            SelectedNote = null;
+        }
+
+        if (SelectedNote == null)
+        {
+            SelectedNote = FilteredNotesView.Cast<object>().OfType<NoteListItemViewModel>().FirstOrDefault();
+        }
     }
 
     private void AddGroup()

@@ -3,165 +3,490 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:DesktopMemo.App.ViewModels"
         mc:Ignorable="d"
         Title="DesktopMemo"
         Height="780"
         Width="1300"
         MinHeight="680"
-        MinWidth="1100">
-    <DockPanel>
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem>
-                <TextBlock Text="{Binding StatusMessage}" />
-            </StatusBarItem>
-        </StatusBar>
+        MinWidth="1100"
+        Background="#05070B"
+        Foreground="#E9EDF5"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <SolidColorBrush x:Key="WindowBrush" Color="#05070B" />
+        <SolidColorBrush x:Key="PanelBrush" Color="#11151C" />
+        <SolidColorBrush x:Key="PanelAltBrush" Color="#161B24" />
+        <SolidColorBrush x:Key="InputBrush" Color="#1A202B" />
+        <SolidColorBrush x:Key="BorderBrushDark" Color="#2A3140" />
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E9EDF5" />
+        <SolidColorBrush x:Key="TextMutedBrush" Color="#8E99AC" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#4FA3FF" />
+        <SolidColorBrush x:Key="DangerBrush" Color="#FF5A6B" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
-        <TabControl>
-            <TabItem Header="메모 관리">
-                <Grid Margin="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="3*" />
-                    </Grid.ColumnDefinitions>
+        <Style x:Key="SurfacePanelStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushDark}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
 
-                    <GroupBox Grid.Column="0" Header="메모 그룹" Margin="4">
-                        <DockPanel>
-                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="0,8,0,0">
-                                <Button Content="추가" Command="{Binding AddGroupCommand}" Margin="0,0,6,0" Width="64" />
-                                <Button Content="수정" Command="{Binding RenameGroupCommand}" Margin="0,0,6,0" Width="64" />
-                                <Button Content="삭제" Command="{Binding DeleteGroupCommand}" Width="64" />
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#212A39" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="#31415A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#1A2433" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushDark}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,7" />
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushDark}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,4" />
+        </Style>
+
+        <Style TargetType="DatePicker">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushDark}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder"
+                                Background="#0D1016"
+                                BorderBrush="#1E2431"
+                                BorderThickness="1,1,1,0"
+                                CornerRadius="8,8,0,0"
+                                Margin="0,0,6,0">
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource PanelBrush}" />
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NoteListItemStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Card"
+                                Background="{StaticResource PanelAltBrush}"
+                                BorderBrush="{StaticResource BorderBrushDark}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="12">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Card" Property="Background" Value="#1A2333" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushDark}" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="#243042" />
+            <Setter Property="VerticalGridLinesBrush" Value="#243042" />
+            <Setter Property="RowBackground" Value="{StaticResource PanelBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="#0E131B" />
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#0E1219" />
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+            <Setter Property="BorderBrush" Value="#243042" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#1A2333" />
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0"
+                    Background="{StaticResource WindowBrush}"
+                    BorderBrush="#1C2230">
+            <TabItem Header="메모">
+                <Grid Margin="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Style="{StaticResource SurfacePanelStyle}"
+                            Padding="16"
+                            Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel>
+                                <TextBlock Text="메모 기록"
+                                           FontSize="28"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="{Binding FilteredNoteCount, StringFormat=표시 메모 {0}개}"
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           Margin="0,2,0,0" />
                             </StackPanel>
 
-                            <TreeView Name="GroupTree"
-                                      ItemsSource="{Binding GroupTree}"
-                                      SelectedItemChanged="GroupTree_OnSelectedItemChanged">
-                                <TreeView.ItemTemplate>
-                                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                        <TextBlock Text="{Binding Name}" />
-                                    </HierarchicalDataTemplate>
-                                </TreeView.ItemTemplate>
-                            </TreeView>
-                        </DockPanel>
-                    </GroupBox>
-
-                    <GroupBox Grid.Column="1" Header="메모 목록" Margin="4">
-                        <DockPanel>
-                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="0,8,0,0">
-                                <Button Content="메모 추가" Command="{Binding AddNoteCommand}" Width="88" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="그룹 추가" Command="{Binding AddGroupCommand}" />
+                                <Button Content="그룹 수정" Command="{Binding RenameGroupCommand}" />
+                                <Button Content="그룹 삭제" Command="{Binding DeleteGroupCommand}" />
+                                <Button Content="새 메모" Command="{Binding AddNoteCommand}" />
+                                <Button Content="Sticky 열기" Command="{Binding OpenStickyCommand}" Margin="0" />
                             </StackPanel>
+                        </Grid>
+                    </Border>
 
-                            <ListView ItemsSource="{Binding Notes}" SelectedItem="{Binding SelectedNote, Mode=TwoWay}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn Header="제목" Width="180" DisplayMemberBinding="{Binding Title}" />
-                                        <GridViewColumn Header="알람" Width="50" DisplayMemberBinding="{Binding AlarmEnabled}" />
-                                        <GridViewColumn Header="수정일" Width="130" DisplayMemberBinding="{Binding UpdatedText}" />
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </DockPanel>
-                    </GroupBox>
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                    <GroupBox Grid.Column="2" Header="메모 상세 / 편집" Margin="4">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="8">
-                                <TextBlock Text="제목" FontWeight="Bold" />
-                                <TextBox Text="{Binding NoteTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10" />
+                        <TextBox Grid.Column="0"
+                                 Height="38"
+                                 FontSize="14"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="제목으로 메모 검색"
+                                 Text="{Binding SearchKeyword, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Grid.Column="1"
+                                Content="새로고침"
+                                Command="{Binding RefreshCommand}"
+                                Height="38"
+                                Margin="10,0,0,0" />
+                    </Grid>
 
-                                <TextBlock Text="내용 (Markdown) / 미리보기" FontWeight="Bold" />
-                                <Grid Height="240" Margin="0,4,0,10">
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="280" />
+                            <ColumnDefinition Width="360" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+                                Style="{StaticResource SurfacePanelStyle}"
+                                Padding="12"
+                                Margin="0,0,10,0">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top"
+                                           Text="메모 그룹"
+                                           Style="{StaticResource SectionTitleStyle}" />
+
+                                <StackPanel DockPanel.Dock="Bottom"
+                                            Orientation="Horizontal"
+                                            Margin="0,10,0,0">
+                                    <Button Content="추가"
+                                            Width="74"
+                                            Command="{Binding AddGroupCommand}" />
+                                    <Button Content="수정"
+                                            Width="74"
+                                            Command="{Binding RenameGroupCommand}" />
+                                    <Button Content="삭제"
+                                            Width="74"
+                                            Margin="0"
+                                            Command="{Binding DeleteGroupCommand}" />
+                                </StackPanel>
+
+                                <TreeView Name="GroupTree"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Foreground="{StaticResource TextPrimaryBrush}"
+                                          ItemsSource="{Binding GroupTree}"
+                                          SelectedItemChanged="GroupTree_OnSelectedItemChanged">
+                                    <TreeView.ItemTemplate>
+                                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                            <TextBlock Text="{Binding Name}" />
+                                        </HierarchicalDataTemplate>
+                                    </TreeView.ItemTemplate>
+                                </TreeView>
+                            </DockPanel>
+                        </Border>
+
+                        <Border Grid.Column="1"
+                                Style="{StaticResource SurfacePanelStyle}"
+                                Padding="12"
+                                Margin="0,0,10,0">
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Top" Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0"
-                                             Text="{Binding NoteContent, UpdateSourceTrigger=PropertyChanged}"
-                                             AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto"
-                                             Margin="0,0,6,0" />
-                                    <Border Grid.Column="1" BorderThickness="1" BorderBrush="#DDDDDD">
-                                        <WebBrowser x:Name="MarkdownPreviewBrowser" />
-                                    </Border>
+                                    <TextBlock Text="메모 목록"
+                                               Style="{StaticResource SectionTitleStyle}"
+                                               Margin="0" />
+                                    <Button Grid.Column="1"
+                                            Content="메모 추가"
+                                            Margin="8,0,0,0"
+                                            Command="{Binding AddNoteCommand}" />
                                 </Grid>
 
-                                <UniformGrid Columns="3" Margin="0,0,0,10">
-                                    <StackPanel Margin="0,0,6,0">
-                                        <TextBlock Text="글꼴" FontWeight="Bold" />
-                                        <ComboBox ItemsSource="{Binding FontFamilies}" SelectedItem="{Binding SelectedFontFamily, Mode=TwoWay}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="0,0,6,0">
-                                        <TextBlock Text="크기" FontWeight="Bold" />
-                                        <TextBox Text="{Binding FontSize, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel>
-                                        <TextBlock Text="색상(HEX)" FontWeight="Bold" />
-                                        <TextBox Text="{Binding FontColorHex, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                </UniformGrid>
+                                <ListBox ItemsSource="{Binding FilteredNotesView}"
+                                         SelectedItem="{Binding SelectedNote, Mode=TwoWay}"
+                                         ItemContainerStyle="{StaticResource NoteListItemStyle}"
+                                         Background="Transparent"
+                                         BorderThickness="0">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <DockPanel LastChildFill="True">
+                                                    <Border DockPanel.Dock="Right"
+                                                            Background="#263752"
+                                                            CornerRadius="4"
+                                                            Padding="6,2"
+                                                            Margin="6,0,0,0"
+                                                            Visibility="{Binding AlarmEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <TextBlock Text="ALARM"
+                                                                   FontSize="10"
+                                                                   Foreground="#9DC8FF" />
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Title}"
+                                                               FontSize="15"
+                                                               FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                </DockPanel>
+                                                <TextBlock Text="{Binding UpdatedText}"
+                                                           Margin="0,6,0,0"
+                                                           Foreground="{StaticResource TextMutedBrush}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Border>
 
-                                <UniformGrid Columns="3" Margin="0,0,0,10">
-                                    <StackPanel Margin="0,0,6,0">
-                                        <TextBlock Text="굵기" FontWeight="Bold" />
-                                        <ComboBox ItemsSource="{Binding FontWeights}" SelectedItem="{Binding SelectedFontWeight, Mode=TwoWay}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="0,0,6,0">
-                                        <TextBlock Text="기울임" FontWeight="Bold" />
-                                        <ComboBox ItemsSource="{Binding FontStyles}" SelectedItem="{Binding SelectedFontStyle, Mode=TwoWay}" />
-                                    </StackPanel>
-                                    <StackPanel>
-                                        <TextBlock Text="기타" FontWeight="Bold" />
-                                        <CheckBox Content="밑줄" IsChecked="{Binding IsUnderline, Mode=TwoWay}" Margin="0,4,0,0" />
-                                    </StackPanel>
-                                </UniformGrid>
+                        <Border Grid.Column="2"
+                                Style="{StaticResource SurfacePanelStyle}"
+                                Padding="12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="제목" Style="{StaticResource SectionTitleStyle}" />
+                                    <TextBox Text="{Binding NoteTitle, UpdateSourceTrigger=PropertyChanged}"
+                                             Margin="0,0,0,10" />
 
-                                <Separator Margin="0,0,0,10" />
+                                    <TextBlock Text="내용 (Markdown) / 미리보기" Style="{StaticResource SectionTitleStyle}" />
+                                    <Grid Height="260" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                                 Text="{Binding NoteContent, UpdateSourceTrigger=PropertyChanged}"
+                                                 AcceptsReturn="True"
+                                                 VerticalScrollBarVisibility="Auto"
+                                                 Margin="0,0,6,0" />
+                                        <Border Grid.Column="1"
+                                                Background="#FFFFFF"
+                                                BorderThickness="1"
+                                                BorderBrush="{StaticResource BorderBrushDark}">
+                                            <WebBrowser x:Name="MarkdownPreviewBrowser" />
+                                        </Border>
+                                    </Grid>
 
-                                <CheckBox Content="알람 사용" IsChecked="{Binding AlarmEnabled, Mode=TwoWay}" Margin="0,0,0,8" />
-                                <UniformGrid Columns="4" Margin="0,0,0,10">
-                                    <StackPanel Margin="0,0,6,0">
-                                        <TextBlock Text="알람 날짜" FontWeight="Bold" />
-                                        <DatePicker SelectedDate="{Binding AlarmLocalDate, Mode=TwoWay}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="0,0,6,0">
-                                        <TextBlock Text="알람 시간(HH:mm)" FontWeight="Bold" />
-                                        <TextBox Text="{Binding AlarmTimeText, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="0,0,6,0">
-                                        <TextBlock Text="반복" FontWeight="Bold" />
-                                        <ComboBox ItemsSource="{Binding RepeatTypes}" SelectedItem="{Binding SelectedRepeatType, Mode=TwoWay}" />
-                                    </StackPanel>
-                                    <StackPanel>
-                                        <TextBlock Text="반복 종료일" FontWeight="Bold" />
-                                        <DatePicker SelectedDate="{Binding RepeatEndLocalDate, Mode=TwoWay}" />
-                                    </StackPanel>
-                                </UniformGrid>
+                                    <TextBlock Text="글꼴 설정" Style="{StaticResource SectionTitleStyle}" />
+                                    <UniformGrid Columns="3" Margin="0,0,0,10">
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="글꼴" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <ComboBox ItemsSource="{Binding FontFamilies}"
+                                                      SelectedItem="{Binding SelectedFontFamily, Mode=TwoWay}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="크기" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <TextBox Text="{Binding FontSize, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="색상(HEX)" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <TextBox Text="{Binding FontColorHex, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </UniformGrid>
 
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Button Content="스누즈 5분" Command="{Binding Snooze5Command}" Width="90" Margin="0,0,8,0" />
-                                    <Button Content="스누즈 10분" Command="{Binding Snooze10Command}" Width="90" Margin="0,0,8,0" />
-                                    <Button Content="스누즈 30분" Command="{Binding Snooze30Command}" Width="90" Margin="0,0,8,0" />
-                                    <Button Content="알람 해제" Command="{Binding DismissAlarmCommand}" Width="90" />
+                                    <UniformGrid Columns="3" Margin="0,0,0,10">
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="굵기" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <ComboBox ItemsSource="{Binding FontWeights}"
+                                                      SelectedItem="{Binding SelectedFontWeight, Mode=TwoWay}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="기울임" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <ComboBox ItemsSource="{Binding FontStyles}"
+                                                      SelectedItem="{Binding SelectedFontStyle, Mode=TwoWay}" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="기타" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <CheckBox Content="밑줄"
+                                                      IsChecked="{Binding IsUnderline, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </UniformGrid>
+
+                                    <TextBlock Text="알람 설정" Style="{StaticResource SectionTitleStyle}" />
+                                    <CheckBox Content="알람 사용"
+                                              IsChecked="{Binding AlarmEnabled, Mode=TwoWay}"
+                                              Margin="0,0,0,8" />
+                                    <UniformGrid Columns="4" Margin="0,0,0,4">
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="알람 날짜" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <DatePicker SelectedDate="{Binding AlarmLocalDate, Mode=TwoWay}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="알람 시간(HH:mm)" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <TextBox Text="{Binding AlarmTimeText, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,6,0">
+                                            <TextBlock Text="반복" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <ComboBox ItemsSource="{Binding RepeatTypes}"
+                                                      SelectedItem="{Binding SelectedRepeatType, Mode=TwoWay}" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="반복 종료일" Style="{StaticResource SectionTitleStyle}" Margin="0,0,0,4" />
+                                            <DatePicker SelectedDate="{Binding RepeatEndLocalDate, Mode=TwoWay}" />
+                                        </StackPanel>
+                                    </UniformGrid>
                                 </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
 
-                                <Separator Margin="0,0,0,10" />
+                    <Border Grid.Row="3"
+                            Style="{StaticResource SurfacePanelStyle}"
+                            Padding="12"
+                            Margin="0,10,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="삭제" Command="{Binding DeleteNoteCommand}" Width="80" Margin="0,0,8,0" />
-                                    <ComboBox Width="180"
-                                              ItemsSource="{Binding AllGroupsFlat}"
-                                              DisplayMemberPath="Name"
-                                              SelectedItem="{Binding MoveTargetGroup, Mode=TwoWay}" />
-                                    <Button Content="다른 그룹으로 이동"
-                                            Command="{Binding MoveNoteCommand}"
-                                            Width="130"
-                                            Margin="8,0,8,0" />
-                                    <Button Content="Sticky 열기" Command="{Binding OpenStickyCommand}" Width="90" />
-                                </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="알람"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           Margin="0,0,10,0" />
+                                <Button Content="스누즈 5분" Width="96" Command="{Binding Snooze5Command}" />
+                                <Button Content="스누즈 10분" Width="100" Command="{Binding Snooze10Command}" />
+                                <Button Content="스누즈 30분" Width="100" Command="{Binding Snooze30Command}" />
+                                <Button Content="알람 해제"
+                                        Width="88"
+                                        Command="{Binding DismissAlarmCommand}"
+                                        Margin="0" />
                             </StackPanel>
-                        </ScrollViewer>
-                    </GroupBox>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <ComboBox Width="190"
+                                          Margin="0,0,8,0"
+                                          ItemsSource="{Binding AllGroupsFlat}"
+                                          DisplayMemberPath="Name"
+                                          SelectedItem="{Binding MoveTargetGroup, Mode=TwoWay}" />
+                                <Button Content="다른 그룹으로 이동"
+                                        Width="130"
+                                        Command="{Binding MoveNoteCommand}" />
+                                <Button Content="삭제"
+                                        Width="72"
+                                        Command="{Binding DeleteNoteCommand}"
+                                        Background="#312029"
+                                        BorderBrush="{StaticResource DangerBrush}"
+                                        Margin="0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </Grid>
             </TabItem>
 
@@ -176,7 +501,8 @@
                               AutoGenerateColumns="False"
                               ItemsSource="{Binding TrashItems}"
                               SelectedItem="{Binding SelectedTrashItem, Mode=TwoWay}"
-                              IsReadOnly="True">
+                              IsReadOnly="True"
+                              Margin="0,0,0,10">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="유형" Binding="{Binding ItemTypeText}" Width="120" />
                             <DataGridTextColumn Header="이름" Binding="{Binding Name}" Width="*" />
@@ -184,14 +510,26 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
-                        <Button Content="복구" Command="{Binding RestoreTrashItemCommand}" Width="80" Margin="0,0,8,0" />
-                        <Button Content="선택 영구삭제" Command="{Binding DeleteTrashItemPermanentlyCommand}" Width="110" Margin="0,0,8,0" />
-                        <Button Content="90일 경과 정리" Command="{Binding PurgeExpiredTrashCommand}" Width="120" Margin="0,0,8,0" />
-                        <Button Content="휴지통 비우기" Command="{Binding EmptyTrashCommand}" Width="100" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <Button Content="복구" Width="80" Command="{Binding RestoreTrashItemCommand}" />
+                        <Button Content="선택 영구삭제" Width="120" Command="{Binding DeleteTrashItemPermanentlyCommand}" />
+                        <Button Content="90일 경과 정리" Width="120" Command="{Binding PurgeExpiredTrashCommand}" />
+                        <Button Content="휴지통 비우기"
+                                Width="100"
+                                Command="{Binding EmptyTrashCommand}"
+                                Background="#312029"
+                                BorderBrush="{StaticResource DangerBrush}"
+                                Margin="0" />
                     </StackPanel>
                 </Grid>
             </TabItem>
         </TabControl>
-    </DockPanel>
+
+        <Border Grid.Row="1"
+                Margin="0,10,0,0"
+                Padding="12,8"
+                Style="{StaticResource SurfacePanelStyle}">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource TextMutedBrush}" />
+        </Border>
+    </Grid>
 </Window>
