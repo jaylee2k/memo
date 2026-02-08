@@ -1,0 +1,25 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code
+.idea/
+.vscode/
+.vs/
+
+# Logs
+*.log
+
+# SQLite runtime db
+*.db
+*.db-shm
+*.db-wal
+
+# Packaging artifacts
+artifacts/
